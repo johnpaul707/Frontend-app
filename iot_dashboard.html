@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Temperature Monitoring System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0b1020;
+            --bg-elev: #111632;
+            --text: #eaf0ff;
+            --muted: #a7b1c7;
+            --primary: #7aa2ff;
+            --secondary: #22d3ee;
+            --accent: #34d399;
+            --danger: #f87171;
+            --warning: #fbbf24;
+            --success: #10b981;
+            --card-bg: rgba(255, 255, 255, 0.06);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        [data-theme="light"] {
+            --bg: #f7f9fc;
+            --bg-elev: #ffffff;
+            --text: #0f172a;
+            --muted: #475569;
+            --primary: #2563eb;
+            --secondary: #0891b2;
+            --accent: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --success: #16a34a;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border: rgba(15, 23, 42, 0.08);
+            --shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", 'Segoe UI Symbol', sans-serif;
+            color: var(--text);
+            background: radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.22), transparent 60%),
+                        radial-gradient(1000px 500px at -10% 30%, rgba(8, 145, 178, 0.2), transparent 55%),
+                        linear-gradient(180deg, var(--bg) 0%, #0a0f23 100%);
+            background-attachment: fixed;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+        .skip-link {
+            position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden;
+        }
+        .skip-link:focus { position: static; width: auto; height: auto; padding: 8px 12px; border-radius: 8px; background: var(--bg-elev); border: 1px solid var(--card-border); }
+
+        header.topbar {
+            position: sticky; top: 0; z-index: 50;
+            backdrop-filter: saturate(140%) blur(10px);
+            -webkit-backdrop-filter: saturate(140%) blur(10px);
+            background: linear-gradient(180deg, rgba(17, 22, 50, 0.9), rgba(17, 22, 50, 0.6));
+            border-bottom: 1px solid var(--card-border);
+        }
+        .topbar-inner { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 14px 24px; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand i { font-size: 1.6rem; color: var(--secondary); }
+        .brand h1 { font-size: 1.125rem; margin: 0; font-weight: 700; letter-spacing: 0.2px; }
+
+        nav.primary-nav { justify-self: center; }
+        .nav-list { list-style: none; display: flex; gap: 8px; padding: 0; margin: 0; }
+        .nav-link { padding: 8px 12px; border-radius: 10px; color: var(--muted); transition: 180ms ease; border: 1px solid transparent; }
+        .nav-link:hover { color: var(--text); background: var(--card-bg); border-color: var(--card-border); }
+        .nav-link.active { color: var(--text); background: linear-gradient(180deg, rgba(122, 162, 255, 0.18), rgba(122, 162, 255, 0.06)); border-color: rgba(122, 162, 255, 0.35); }
+
+        .top-actions { display: flex; align-items: center; gap: 12px; }
+        .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text); cursor: pointer; transition: 180ms ease; }
+        .icon-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+        .user-chip { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); }
+        .avatar { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--secondary), var(--primary)); color: #fff; font-weight: 700; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1; }
+        .user-meta .name { font-size: 0.9rem; font-weight: 600; }
+        .user-meta .status { font-size: 0.75rem; color: var(--muted); }
+
+        .hero { margin: 18px 0 24px 0; padding: 18px 20px; border-radius: 16px; background: radial-gradient(120% 150% at 0% 0%, rgba(52, 211, 153, 0.18), transparent 40%), radial-gradient(120% 150% at 100% 0%, rgba(125, 211, 252, 0.18), transparent 40%), var(--bg-elev); border: 1px solid var(--card-border); box-shadow: var(--shadow); }
+        .hero h2 { margin: 0 0 6px 0; font-size: 1.25rem; }
+        .hero p { margin: 0; color: var(--muted); }
+
+        .grid { display: grid; gap: 18px; }
+        .grid.cards { grid-template-columns: repeat(12, 1fr); }
+        .span-4 { grid-column: span 4; }
+        .span-6 { grid-column: span 6; }
+        .span-12 { grid-column: span 12; }
+
+        @media (max-width: 1024px) {
+            .span-4 { grid-column: span 6; }
+            .span-6 { grid-column: span 12; }
+        }
+        @media (max-width: 720px) {
+            .topbar-inner { grid-template-columns: 1fr auto; grid-auto-flow: row; }
+            nav.primary-nav { display: none; }
+            .span-4, .span-6, .span-12 { grid-column: span 12; }
+        }
+
+        .card { border: 1px solid var(--card-border); border-radius: 16px; background: var(--bg-elev); box-shadow: var(--shadow); overflow: hidden; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--card-border); }
+        .card-title { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); }
+        .status-dot { width: 10px; height: 10px; border-radius: 999px; }
+        .ok { background: var(--success); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .warn { background: var(--warning); box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15); }
+        .crit { background: var(--danger); box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15); }
+
+        .card-body { padding: 14px 16px 16px 16px; }
+        .temp { font-size: 2rem; font-weight: 800; text-align: center; letter-spacing: 0.4px; }
+        .muted { text-align: center; color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+
+        .chart-wrap { position: relative; height: 260px; margin-top: 8px; }
+        .chart-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+
+        .feed { max-height: 340px; overflow: auto; display: grid; gap: 10px; padding: 10px 12px; }
+        .feed-item { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: start; border: 1px solid var(--card-border); background: var(--card-bg); padding: 10px 12px; border-radius: 12px; }
+        .feed-item .icon { font-size: 1.2rem; line-height: 1; }
+        .feed-item .meta { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+        .feed-item.crit { border-left: 4px solid var(--danger); }
+        .feed-item.warn { border-left: 4px solid var(--warning); }
+
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text); font-weight: 600; cursor: pointer; transition: 160ms ease; }
+        .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+        .btn.primary { background: linear-gradient(180deg, rgba(122, 162, 255, 0.22), rgba(122, 162, 255, 0.08)); border-color: rgba(122, 162, 255, 0.35); }
+        .btn.danger { background: linear-gradient(180deg, rgba(248, 113, 113, 0.2), rgba(248, 113, 113, 0.08)); border-color: rgba(248, 113, 113, 0.35); }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border-radius: 12px; }
+        thead th { position: sticky; top: 0; background: linear-gradient(180deg, rgba(122, 162, 255, 0.15), rgba(122, 162, 255, 0.05)); color: var(--text); text-align: left; font-weight: 700; font-size: 0.9rem; padding: 12px 14px; border-bottom: 1px solid var(--card-border); }
+        tbody td { padding: 12px 14px; border-bottom: 1px solid var(--card-border); color: var(--text); }
+        tbody tr:nth-child(odd) td { background: rgba(255, 255, 255, 0.02); }
+        .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 0.75rem; }
+        .badge.success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+        .badge.warn { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); }
+        .badge.crit { background: rgba(248, 113, 113, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.35); }
+
+        .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .kpi { border: 1px solid var(--card-border); background: var(--bg-elev); border-radius: 14px; padding: 16px; text-align: center; box-shadow: var(--shadow); }
+        .kpi .value { font-size: 1.6rem; font-weight: 800; }
+        .kpi .label { color: var(--muted); margin-top: 4px; }
+        @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } }
+
+        .ring { --p: 0; width: 88px; height: 88px; border-radius: 50%; background:
+            radial-gradient(closest-side, var(--bg-elev) 74%, transparent 75% 100%),
+            conic-gradient(var(--secondary) calc(var(--p) * 1%), rgba(255,255,255,0.08) 0);
+            display: grid; place-items: center; margin: 8px auto 0 auto; border: 1px solid var(--card-border);
+        }
+        .ring span { font-weight: 800; }
+
+        @media print {
+            .icon-btn, .btn { display: none !important; }
+            header.topbar { position: static; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <header class="topbar" role="banner">
+        <div class="topbar-inner container">
+            <div class="brand" aria-label="Brand">
+                <i class="fas fa-temperature-high" aria-hidden="true"></i>
+                <h1>IoT Temperature Monitoring</h1>
+            </div>
+
+            <nav class="primary-nav" aria-label="Primary">
+                <ul class="nav-list">
+                    <li><a href="#" class="nav-link active"><i class="fas fa-th-large" aria-hidden="true"></i> Dashboard</a></li>
+                    <li><a href="#" class="nav-link"><i class="fas fa-history" aria-hidden="true"></i> History</a></li>
+                    <li><a href="#" class="nav-link"><i class="fas fa-cog" aria-hidden="true"></i> Settings</a></li>
+                    <li><a href="#" class="nav-link"><i class="fas fa-user" aria-hidden="true"></i> Admin</a></li>
+                </ul>
+            </nav>
+
+            <div class="top-actions">
+                <button id="themeToggle" class="icon-btn" aria-label="Toggle color theme">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+                <div class="user-chip" aria-label="User">
+                    <div class="avatar" aria-hidden="true">A</div>
+                    <div class="user-meta">
+                        <span class="name">Admin User</span>
+                        <span class="status">Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="container" role="main">
+        <section class="hero" aria-label="Overview">
+            <h2>Environmental Monitoring Dashboard</h2>
+            <p>Real-time temperature and humidity tracking across all zones.</p>
+        </section>
+
+        <section class="grid cards" aria-label="Zones">
+            <article class="card span-4" aria-labelledby="z1-title">
+                <div class="card-header">
+                    <div class="card-title"><span class="status-dot ok" aria-hidden="true"></span><span id="z1-title">Greenhouse Zone 1</span></div>
+                </div>
+                <div class="card-body">
+                    <div class="temp" id="z1-temp">27.3°C</div>
+                    <div class="muted">Humidity: 65%</div>
+                    <div class="ring" style="--p:65"><span>65%</span></div>
+                    <div class="chart-wrap" aria-hidden="false">
+                        <canvas id="chart1" aria-label="Temperature line chart for Greenhouse Zone 1" role="img"></canvas>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card span-4" aria-labelledby="z2-title">
+                <div class="card-header">
+                    <div class="card-title"><span class="status-dot warn" aria-hidden="true"></span><span id="z2-title">Seed Storage Room</span></div>
+                </div>
+                <div class="card-body">
+                    <div class="temp" id="z2-temp">18.7°C</div>
+                    <div class="muted">Humidity: 45%</div>
+                    <div class="ring" style="--p:45"><span>45%</span></div>
+                    <div class="chart-wrap">
+                        <canvas id="chart2" aria-label="Temperature line chart for Seed Storage" role="img"></canvas>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card span-4" aria-labelledby="z3-title">
+                <div class="card-header">
+                    <div class="card-title"><span class="status-dot crit" aria-hidden="true"></span><span id="z3-title">Laboratory</span></div>
+                </div>
+                <div class="card-body">
+                    <div class="temp" id="z3-temp">32.5°C</div>
+                    <div class="muted">Humidity: 70%</div>
+                    <div class="ring" style="--p:70"><span>70%</span></div>
+                    <div class="chart-wrap">
+                        <canvas id="chart3" aria-label="Temperature line chart for Laboratory" role="img"></canvas>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="grid cards" aria-label="Alerts and Devices" style="margin-top: 6px;">
+            <article class="card span-6">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-bell" aria-hidden="true"></i> Alert Feed</div>
+                    <button class="btn primary" type="button"><i class="fa-solid fa-list"></i> View All</button>
+                </div>
+                <div class="card-body">
+                    <div class="feed" role="list">
+                        <div class="feed-item crit" role="listitem">
+                            <div class="icon" aria-hidden="true"><i class="fas fa-exclamation-circle"></i></div>
+                            <div>
+                                <div>Laboratory exceeded 32°C at 14:25</div>
+                                <div class="meta">Critical temperature level</div>
+                            </div>
+                            <time class="meta" datetime="2025-08-26T14:25:00Z">14:25</time>
+                        </div>
+                        <div class="feed-item warn" role="listitem">
+                            <div class="icon" aria-hidden="true"><i class="fas fa-exclamation-triangle"></i></div>
+                            <div>
+                                <div>Seed Storage approaching limits at 13:40</div>
+                                <div class="meta">Temperature: 18.7°C</div>
+                            </div>
+                            <time class="meta" datetime="2025-08-26T13:40:00Z">13:40</time>
+                        </div>
+                        <div class="feed-item" role="listitem">
+                            <div class="icon" aria-hidden="true"><i class="fas fa-info-circle"></i></div>
+                            <div>
+                                <div>New sensor data received at 13:15</div>
+                                <div class="meta">Device: Sensor Unit A12</div>
+                            </div>
+                            <time class="meta" datetime="2025-08-26T13:15:00Z">13:15</time>
+                        </div>
+                        <div class="feed-item" role="listitem">
+                            <div class="icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <div>System check completed at 12:30</div>
+                                <div class="meta">All systems operational</div>
+                            </div>
+                            <time class="meta" datetime="2025-08-26T12:30:00Z">12:30</time>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card span-6">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-microchip" aria-hidden="true"></i> Device Status</div>
+                    <button class="btn primary" type="button"><i class="fa-solid fa-sliders"></i> Manage</button>
+                </div>
+                <div class="card-body" style="padding-top: 0;">
+                    <div style="overflow: auto; border-radius: 12px; border: 1px solid var(--card-border);">
+                        <table role="table" aria-label="Device status table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Device ID</th>
+                                    <th scope="col">Location</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>SU-A12</td>
+                                    <td>Greenhouse Zone 1</td>
+                                    <td><span class="badge success"><i class="fa-solid fa-circle"></i> Online</span></td>
+                                </tr>
+                                <tr>
+                                    <td>SU-B7</td>
+                                    <td>Seed Storage</td>
+                                    <td><span class="badge success"><i class="fa-solid fa-circle"></i> Online</span></td>
+                                </tr>
+                                <tr>
+                                    <td>SU-C3</td>
+                                    <td>Laboratory</td>
+                                    <td><span class="badge warn"><i class="fa-solid fa-triangle-exclamation"></i> Unstable</span></td>
+                                </tr>
+                                <tr>
+                                    <td>SU-D9</td>
+                                    <td>Greenhouse Zone 2</td>
+                                    <td><span class="badge crit"><i class="fa-solid fa-xmark"></i> Offline</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="card span-12" style="margin-top: 18px;">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i> System Overview</div>
+            </div>
+            <div class="card-body">
+                <div class="kpis">
+                    <div class="kpi">
+                        <div class="value">4</div>
+                        <div class="label">Connected Devices</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="value">3</div>
+                        <div class="label">Monitored Zones</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="value">12</div>
+                        <div class="label">Alerts Today</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="value">98.7%</div>
+                        <div class="label">System Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        const savedTheme = localStorage.getItem('theme');
+        const root = document.documentElement;
+        if (savedTheme) {
+            root.setAttribute('data-theme', savedTheme);
+        } else if (prefersLight) {
+            root.setAttribute('data-theme', 'light');
+        }
+        const themeToggle = document.getElementById('themeToggle');
+        const setIcon = () => {
+            const isLight = root.getAttribute('data-theme') === 'light';
+            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+        };
+        setIcon();
+        themeToggle.addEventListener('click', () => {
+            const isLight = root.getAttribute('data-theme') === 'light';
+            root.setAttribute('data-theme', isLight ? 'dark' : 'light');
+            localStorage.setItem('theme', isLight ? 'dark' : 'light');
+            setIcon();
+        });
+
+        function createChart(elementId, label, data, color, yMin, yMax) {
+            const ctx = document.getElementById(elementId).getContext('2d');
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
+                    datasets: [{
+                        label,
+                        data,
+                        borderColor: color,
+                        borderWidth: 2,
+                        tension: 0.35,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: color + '22'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(128,128,128,0.15)' } },
+                        y: { min: yMin, max: yMax, grid: { color: 'rgba(128,128,128,0.15)' } }
+                    }
+                }
+            });
+        }
+
+        let ch1, ch2, ch3;
+        function initCharts() {
+            ch1 = createChart('chart1', 'Temperature (°C)', [25, 26, 26.5, 27, 27.3, 27.1], '#60a5fa', 24, 28);
+            ch2 = createChart('chart2', 'Temperature (°C)', [17, 17.5, 18, 18.2, 18.7, 18.5], '#fbbf24', 16, 20);
+            ch3 = createChart('chart3', 'Temperature (°C)', [28, 29, 30, 31, 32.5, 32.2], '#f87171', 27, 34);
+        }
+
+        function simulateRealtime() {
+            const series = [ch1, ch2, ch3];
+            series.forEach((chart) => {
+                const next = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1] + (Math.random() - 0.5) * 0.3;
+                chart.data.datasets[0].data.push(Number(next.toFixed(2)));
+                chart.data.labels.push(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                if (chart.data.labels.length > 12) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+                chart.update('none');
+            });
+        }
+
+        window.addEventListener('load', () => {
+            initCharts();
+            setInterval(simulateRealtime, 30000);
+        });
+    </script>
+</body>
+</html>
